@@ -1,0 +1,43 @@
+:root {
+  --bg: #f9fafb;
+  --card: #ffffff;
+  --border: #e5e7eb;
+  --text: #111827;
+  --muted: #6b7280;
+  --brand: #111827;
+}
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', sans-serif; }
+.container { max-width: 1200px; padding: 24px; margin: 0 auto; }
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 16px; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+h1 { font-size: 22px; margin: 0 0 8px; }
+h2 { font-size: 18px; margin: 0 0 12px; }
+.btn { padding: 8px 14px; border-radius: 10px; background: var(--brand); color: #fff; border: none; cursor: pointer; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.row { display: grid; gap: 12px; grid-template-columns: repeat(12, 1fr); }
+.col-12 { grid-column: span 12; }
+.col-6 { grid-column: span 6; }
+.col-4 { grid-column: span 4; }
+.col-3 { grid-column: span 3; }
+.field label { display:block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+.field input, .field select { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); background: #fff; font-size: 14px; }
+.status { font-size: 12px; padding: 4px 10px; border-radius: 999px; background: #ecfeff; color: #075985; }
+.table-wrap { overflow:auto; }
+table { width: 100%; border-collapse: separate; border-spacing: 0 10px; font-size: 13px; }
+thead th { text-align: left; color: var(--muted); position: sticky; top: 0; background: var(--bg); padding: 6px 8px; }
+tbody td { background: #fff; padding: 8px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+tbody tr { box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.filters { display: flex; gap: 12px; flex-wrap: wrap; justify-content: flex-end; align-items: end; }
+.w-200 { width: 200px; }
+.muted { color: var(--muted); font-size: 12px; }
+@media (max-width: 768px) {
+  .row { grid-template-columns: repeat(6, 1fr); }
+  .col-6 { grid-column: span 6; }
+  .col-4 { grid-column: span 6; }
+  .col-3 { grid-column: span 6; }
+  thead { display: none; }
+  table, tbody, tr, td { display: block; width: 100%; }
+  tbody td { border: 1px solid var(--border); border-radius: 10px; margin-bottom: 6px; }
+}
