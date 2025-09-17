@@ -1,5 +1,5 @@
 export type IdName = { id: string; name: string };
-export type Product = { id: string; code: string; name: string; category_id: string | null };
+export type Product = { id: string; code: string; name: string; category_id: string | null; unit_kg: number | null };
 
 export type TradeRow = {
   id: string;

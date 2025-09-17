@@ -6,15 +6,32 @@ import NumInput from '../../components/inputs/NumInput'
 import type { IdName, Product } from '../../lib/types'
 import { generateDocNo, supplierNameForCategory } from '../../lib/utils'
 
-export default function PurchaseForm({ sb, products, units, suppliers, categories, onDone }:{ sb: SupabaseClient; products: Product[]; units: IdName[]; suppliers: IdName[]; categories: IdName[]; onDone: ()=>Promise<void> }) {
+export default function PurchaseForm({ sb, products, units, suppliers, categories, onDone }: { sb: SupabaseClient; products: Product[]; units: IdName[]; suppliers: IdName[]; categories: IdName[]; onDone: () => Promise<void> }) {
   const [selectedCategory, setSelectedCategory] = useState<string>('赤貝');
-  const [purchased_at, setPurchasedAt] = useState<string>(new Date().toISOString().slice(0,10));
+  const [purchased_at, setPurchasedAt] = useState<string>(new Date().toISOString().slice(0, 10));
   const [supplier_id, setSupplierId] = useState<string>('');
   const [in_product_id, setInProductId] = useState<string>('');
   const [in_unit_id, setInUnitId] = useState<string>('');
   const [in_qty_units, setInQtyUnits] = useState<number>(0);
   const [in_unit_price, setInUnitPrice] = useState<number>(0);
   const [msg, setMsg] = useState<string>('');
+
+  const unit_kg = useMemo(() => {
+    const product = products.find(p => p.id === in_product_id);
+    return product?.unit_kg || 0;
+  }, [in_product_id, products]);
+
+  const total_kg = useMemo(() => {
+    const unit = units.find(u => u.id === in_unit_id);
+    if (unit?.name === '㎏') return in_qty_units;
+    return unit_kg * in_qty_units;
+  }, [unit_kg, in_qty_units, in_unit_id, units]);
+
+  const total_price = useMemo(() => {
+    const unit = units.find(u => u.id === in_unit_id);
+    if (unit?.name === '㎏') return in_unit_price * total_kg;
+    return in_unit_price * in_qty_units;
+  }, [in_unit_price, in_qty_units, in_unit_id, units, total_kg]);
 
   useEffect(() => {
     const catMap = new Map(categories.map(c => [c.id, c.name] as const));
@@ -37,19 +54,19 @@ export default function PurchaseForm({ sb, products, units, suppliers, categorie
 
   const categoryOptions = useMemo(() => {
     return Array.from(new Set(categories.map(c => c.name).filter(Boolean) as string[]))
-      .sort((a,b)=>a.localeCompare(b,'ja')).map(n => ({ value: n, label: n }));
+      .sort((a, b) => a.localeCompare(b, 'ja')).map(n => ({ value: n, label: n }));
   }, [categories]);
 
   const productOptions = useMemo(() => {
     const catMap = new Map(categories.map(c => [c.id, c.name] as const));
     return products
       .filter(p => (catMap.get(p.category_id || '') || '') === selectedCategory)
-      .sort((a,b)=>(a.code||'').localeCompare(b.code||'','ja'))
+      .sort((a, b) => (a.code || '').localeCompare(b.code || '', 'ja'))
       .map(p => ({ value: p.id, label: `${p.code} - ${p.name}` }));
   }, [products, categories, selectedCategory]);
 
-  const unitOptions = useMemo(()=>units.map(u=>({ value: u.id, label: u.name })), [units]);
-  const supplierOptions = useMemo(()=>suppliers.map(s=>({ value: s.id, label: s.name })), [suppliers]);
+  const unitOptions = useMemo(() => units.map(u => ({ value: u.id, label: u.name })), [units]);
+  const supplierOptions = useMemo(() => suppliers.map(s => ({ value: s.id, label: s.name })), [suppliers]);
 
   async function submit() {
     setMsg('');
@@ -62,7 +79,7 @@ export default function PurchaseForm({ sb, products, units, suppliers, categorie
       state: '在庫',
     };
     const { error } = await sb.from('trade_rows').insert(payload);
-    if (error) { setMsg('仕入 登録エラー: ' + (error.message||String(error))); return; }
+    if (error) { setMsg('仕入 登録エラー: ' + (error.message || String(error))); return; }
     setMsg('仕入を登録しました');
     setInQtyUnits(0); setInUnitPrice(0);
     await onDone();
@@ -77,8 +94,10 @@ export default function PurchaseForm({ sb, products, units, suppliers, categorie
       <div className="col-6"><Select label="商品" value={in_product_id} onChange={setInProductId} options={productOptions} /></div>
       <div className="col-4"><Select label="単位" value={in_unit_id} onChange={setInUnitId} options={unitOptions} /></div>
       <div className="col-4"><NumInput label="件数" value={in_qty_units} onCommit={setInQtyUnits} /></div>
-      <div className="col-4"><NumInput label="仕入単価" value={in_unit_price} onCommit={setInUnitPrice} /></div>
-      <div className="col-12" style={{display:'flex', justifyContent:'flex-end'}}>
+      <div className="col-4"><NumInput label="kg数" value={total_kg} onCommit={()=>{}} readOnly /></div>
+      <div className="col-6"><NumInput label="仕入単価" value={in_unit_price} onCommit={setInUnitPrice} /></div>
+      <div className="col-6"><NumInput label="金額" value={total_price} onCommit={()=>{}} readOnly /></div>
+      <div className="col-12" style={{ display: 'flex', justifyContent: 'flex-end' }}>
         <button className="btn" onClick={submit}>登録</button>
       </div>
       {msg && <div className="col-12 muted">{msg}</div>}
